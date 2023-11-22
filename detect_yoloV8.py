@@ -10,25 +10,25 @@ import json
 from map import map_value
 
 # set up serial communication with arduino board
-ser = serial.Serial('/dev/cu.usbmodem1101', 9600)
+ser = serial.Serial('/dev/cu.usbmodem11101', 9600)
 
 # constant for openCV
 CONFIDENCE_THRESHOLD = 0.85
 GREEN = (0, 255, 0)
 
-# setup variable for communication
+# setup variable for communication, will be sent to Arduino
 buzz = False
 
 # load the model yolov8
 model = YOLO("yolov8n.pt")
 
-# setup openCV video capture
+# setup openCV video capture, for first camera that OS detects
 cv2.startWindowThread()
 cap = cv2.VideoCapture(0)
 
 # loop for ever
 while(True):
-    buzz = False
+    buzz = False #starts buzzer on off setting
     # read the one frame of the video
     ret, frame = cap.read()
 
