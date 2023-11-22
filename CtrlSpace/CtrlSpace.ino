@@ -43,6 +43,11 @@ void loop() {
       angle_c = message["servoC"];
       angle_r = message["servoR"];
       buzz = message["buzz"];
+    } else {
+      angle_l = 90;
+      angle_c = 90;
+      angle_r = 90;
+      buzz = false;
     }
   }
 

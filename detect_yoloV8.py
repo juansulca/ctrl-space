@@ -17,12 +17,7 @@ CONFIDENCE_THRESHOLD = 0.85
 GREEN = (0, 255, 0)
 
 # setup variable for communication
-control = {'servoL': 90, 'servoC': 90, 'servoR': 90, 'buzz': False}
 buzz = False
-
-# net = cv2.dnn.readNet("yolov3.weights", "yolov3.cfg")
-# net = cv2.dnn.readNet("yolov3-tiny.weights", "yolov3-tiny.cfg")
-# layer_names = net.getUnconnectedOutLayersNames()
 
 # load the model yolov8
 model = YOLO("yolov8n.pt")
@@ -36,8 +31,6 @@ while(True):
     buzz = False
     # read the one frame of the video
     ret, frame = cap.read()
-
-    # frame = cv2.resize(frame, (1280, 720))
 
     # get height and width
     height, width, _ = frame.shape
@@ -68,8 +61,8 @@ while(True):
         xmin, ymin, xmax, ymax = int(data[0]), int(data[1]), int(data[2]), int(data[3])
         cv2.rectangle(frame, (xmin, ymin) , (xmax, ymax), GREEN, 2)
         to_follow.append((xmin, xmax))
-        # if len(to_follow) >= 3:
-        #     break
+        if len(to_follow) >= 3:
+            break
     
     # if there is only one person detected
     if len(to_follow) == 1:
@@ -79,31 +72,31 @@ while(True):
         if x < width/3 or x > 2*width/3: # detection is in the middle of the area
             buzz = True
 
-        # angle2 = map_value(x, 0, width, 155, 25)
-        # angle3 = map_value(x, 0, width, 155, 25)
-        # m = str.encode(json.dumps(control))
         m = str.encode(json.dumps({'servoL': angle1, 'servoC': angle1, 'servoR': angle1, 'buzz': buzz}))
         ser.write(m)
     elif len(to_follow) > 1: # there is more than one detection
+        angleL = 90
+        angleC = 90
+        angleR = 90
         for obj in to_follow:
             x = (obj[0] + obj[1])/2
             if x < width /3:
-                angle = map_value(x, 0, width/3, 155, 25)
-                control['servoL'] = angle
+                angleL = map_value(x, 0, width/3, 155, 25)
             elif x < 2*width/3:
-                angle = map_value(x, width/3, 2*width/3, 155, 25)
-                control['servoC'] = angle
+                angleC = map_value(x, width/3, 2*width/3, 155, 25)
             else:
-                angle = map_value(x, 2*width/3, width, 155, 25)
-                control['servoR'] = angle
-        control['buzz'] = buzz
-        m = str.encode(json.dumps(control))
-        ser.write(m)
+                angleR = map_value(x, 2*width/3, width, 155, 25)
+        
+        message = str.encode(json.dumps({'servoL': angleL, 'servoC': angleC, 'servoR': angleR, 'buzz': False}))
+        print(message)
+        ser.write(message)
     else: # look to the front
         m = str.encode(json.dumps({'servoL': 90, 'servoC': 90, 'servoR': 90, 'buzz': buzz}))
         ser.write(m)
 
     cv2.imshow("Frame", frame) # display frame
+
+    ser.flush();
 
     if cv2.waitKey(1) & 0xFF == ord('q'): # exit if you press letter q on the keyboard
         break
